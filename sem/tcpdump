@@ -1,0 +1,115 @@
+package netcap;
+import jpcap.*;
+import java.util.*;
+import java.net.*;
+import java.text.*;
+import java.util.Timer;
+import java.sql.*;
+import java.lang.*;
+class Tcpdump implements JpcapHandler
+{
+  static long count=0;                //计数
+  static double countlen=0;
+  static MainFrame mainFrame = new MainFrame();
+  byte[] packetdatas=null;  //累加池
+  byte[] packetdata=null;   //发送池
+  static Connection Con=null;
+  static Statement Stmt=null;
+  static ResultSet rs;
+ 
+  public void handlePacket (Packet packet)
+  {
+    if (packet instanceof IPPacket)
+    {
+      IPPacket ipPacket = (IPPacket)packet;
+      countlen=countlen+ipPacket.len;
+      count++;
+      if(mainFrame.button1.getLabel()=="Pause")
+      {
+    /*    for(int i=packetdatas.length;i<ipPacket.data.length;i++)
+          packetdatas[i]=ipPacket.data[i];
+ 
+     //   packetdatas=packetdatas+ipPacket.data;
+        if (packetdatas.length>1024*1024){
+          packetdata=packetdatas;
+          packetdatas=null;
+        }*/
+        packetdata=ipPacket.data;
+        Thread threadpacket = new threadreadpacket(ipPacket.len,
+            ipPacket.toString(), packetdata, mainFrame,count);
+        threadpacket.start();
+        packetdata=null;
+      }
+      try{charu(count,ipPacket);}
+      catch(SQLException ee){}
+      mainFrame.jLabel2.setText("Captured "+countlen+" bytes Data");
+      mainFrame.label2.setText("Captured "+count+" IPPacket");
+    }
+  }
+ 
+ 
+  public static void main(String[] args) throws java.io.IOException
+  {
+    int i=0;
+    mainFrame.setSize(650, 350);
+    mainFrame.setTitle("NetCap");
+    mainFrame.setVisible(true);
+   
+    try
+    {
+        Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
+    }
+    catch(ClassNotFoundException e)
+    {}
+    try
+    {
+        Con=DriverManager.getConnection("jdbc:odbc:bao","bao","123");
+        Stmt=Con.createStatement();
+        rs=Stmt.executeQuery("SELECT * FROM bao");
+    }
+    catch(SQLException e1)
+    {}
+ 
+    String[] lists=Jpcap.getDeviceDescription();        //获取网络设备信息
+    for(i=0;i<lists.length;i++)
+      mainFrame.jComboBox_card.insertItemAt(lists[i],i);
+ 
+    while(true){
+      if(mainFrame.button2.getLabel()=="Stop"){
+        i=mainFrame.deviceNum;
+        mainFrame.jComboBox_card.enable(false);
+        mainFrame.textArea1.setText(lists[i]);
+        mainFrame.label1.setText("Capturing on Device "+ i+" "+lists[i]);
+        Jpcap jpcap=Jpcap.openDevice(Jpcap.getDeviceList()[i],1000,true,20);  //true,the inferface becomes promiscuous mode(混杂模式)
+        jpcap.loopPacket( -1, new Tcpdump()); //循环抓包，'-1'表示无限次数
+        break;
+      }
+      //delay();
+    }
+  }
+  public void charu(long count,IPPacket ipPacket) throws SQLException
+  {
+          String bb="bbb";
+          String id,ID2;
+          int ID=ipPacket.ident;
+          //ID=ipPacket.ident;
+          ID2= Integer.toBinaryString(ID);
+         
+          String temp="insert into bao values("+count+","+ipPacket.version+","+ipPacket.rsv_tos+","+
+              ipPacket.length+","+ ID2+","+ipPacket.d_flag+","+ipPacket.offset+","+
+              ipPacket.hop_limit+","+ipPacket.protocol+",'"+ipPacket.src_ip+"','"+
+              ipPacket.dst_ip+"')";
+          System.out.println(ipPacket.src_ip);    
+      Con=DriverManager.getConnection("jdbc:odbc:bao","bao","123");
+      Stmt.executeQuery(temp);
+     // Con.close();
+     rs=Stmt.executeQuery("SELECT * FROM bao");
+   /*  while(rs.next())
+     {
+     id=rs.getString(5);
+     System.out.print("id:"+id+" ");
+  }*/
+       Con.close();
+  }
+ 
+}
