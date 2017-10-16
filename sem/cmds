@@ -1,0 +1,176 @@
+Tcpdump, netstat, tcptrace, traceroute, ifconfig commands:
+
+AIM:
+To implement the tcpdump, tcptrace, netstat, ifconfig commands.
+
+COMMANDS:
+
+1. TCPDUMP
+1Capture from all interface
+#tcpdump –I any
+
+2. Capture packets from a specific interface
+#tcpdump –i eth0
+
+3. Capture only specific number of packets
+#tcpdump –I eth0 –c 20
+
+4. Print captured packets in ASCII
+#tcpdump –D
+
+5. Capture and save packets
+#tcpdump –w th0.pcap –i eth0
+
+6. Capture IP address packets
+#tcpdump –n –I eth0
+
+7. Capture only TCP packets
+#tcpdump –I eth0 –c 20 –w tcpanalyze.pcap tcp
+
+8. Capture from specific port
+#tcpdump –I eth0 port 80
+
+9. Filter records with source and destination IP
+#tcpdump –I eth0 src 192.168.117.90
+
+10. Show only IP6 traffic
+#tcpdump ip6
+
+OUTPUT:
+1 arg remaining starting with ‘tcpdump.out’
+Ostermann’s tcptrace – version 6.2.0 – Fri Jul 26, 2002
+44 packets seen, 44 TCP packets traced
+elapsed wallclock time: 0:00:00.025033, 1757 pkts/sec analyzed
+trace file elapsed time: 0:00:00.435121
+TCP connection info:
+1: c-24- 98-83- 96.hsd1.ga.comcast.net:63807 –
+prefetch.net:www(a2b) 7&amp;gt; 6&amp;lt;
+2: c-24- 98-83- 96.hsd1.ga.comcast.net:62941 –
+prefetch.net:www(c2d) 6&amp;gt; 4&amp;lt;
+3: c-24- 98-83- 96.hsd1.ga.comcast.net:57312 –
+prefetch.net:www(e2f) 6&amp;gt; 5&amp;lt;
+4: c-24- 98-83- 96.hsd1.ga.comcast.net:55792 –
+prefetch.net:www(g2h) 6&amp;gt; 4&amp;lt;
+2. TCPTRACE
+$ tcpdump -i hme1 -w tcpdump.out -s 1520 port 80
+tcpdump: listening on hme1, link-type EN10MB
+^C
+259 packets received by filter
+0 packets dropped by kernel
+1. To display the TCP connections that were captured
+$ tcptrace tcpdump.out
+2. To print information specific to first TCP
+connection, connection is passed to tcptrace
+
+$ tcptrace -01 tcpdump.out
+3. –l option is used to summarize connection details
+for debugging problematic TCP connections
+$ tcptrace -; -01 tcpdump.out
+4. The value listed in tcptrace long output is
+described in –houtput screen
+$ tcptrace –houtput
+5. tcptrace can also display RTT values when invoked
+with –r
+$ tcptrace –r –l -01 tcpdump.out
+OUTPUT:
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address Foreign Address
+State
+tcp 0 0 *:sunrpc *:*
+LISTEN
+tcp 0 52 192.168.0.2:ssh 192.168.0.1:egs
+ESTABLISHED
+tcp 1 0 192.168.0.2:59292 www.gov.com:http
+CLOSE_WAIT
+tcp 0 0 localhost:smtp *:*
+LISTEN
+tcp 0 0 *:59482 *:*
+LISTEN
+udp 0 0 *:35036 *:*
+
+udp 0 0 *:npmp-local *:*
+Active UNIX domain sockets (servers and established)
+Proto RefCnt Flags Type State I-Node Path
+unix 2 [ ACC ] STREAM LISTENING 16972
+/tmp/orbit-root/linc- 76b-0- 6fa08790553d6
+unix 2 [ ACC ] STREAM LISTENING 17149
+/tmp/orbit-root/linc- 794-0- 7058d584166d2
+unix 2 [ ACC ] STREAM LISTENING 17161
+/tmp/orbit-root/linc- 792-0- 546fe905321cc
+unix 2 [ ACC ] STREAM LISTENING 15938
+/tmp/orbit-root/linc- 74b-0- 41513
+3. NETSTAT
+1. Listing all the listening ports of TCP and UDP connections
+# netstat –a | more
+2. Listing TCP port connections
+# netstat -at
+3. Listing UDP port connections
+# netstat -au
+4. Listing all listening connections
+# netstat -l
+5. Listing all TCP listening connections
+# netstat -lt
+6. Listing all UDP listening connections
+# netstat -lu
+7. Listing all UNIX listening connections
+
+# netstat -lx
+8. Showing statistics by protocol
+# netstat -s
+9. Showing statistics by TCP protocol
+# netstat -st
+10. Showing Statistics by UDP Protocol
+# netstat -su
+11. Showing statistics by UDP protocol
+# netstat -tp
+12. Displaying Service name with PID
+# netstat –ac 5 | grep tcp
+13. Displaying Promiscuous Mode
+# netstat -r
+14. Displaying Kernel IP routing
+# netstat -i
+15. Showing Kernel Interface Table
+Output:
+Ip:
+2461 total packets received
+0 forwarded
+0 incoming packets discarded
+2431 incoming packets delivered
+2049 requests sent out
+Icmp:
+0 ICMP messages received
+
+0 input ICMP message failed.
+ICMP input histogram:
+1 ICMP messages sent
+0 ICMP messages failed
+ICMP output histogram:
+destination unreachable: 1
+Tcp:
+159 active connections openings
+1 passive connection openings
+4 failed connection attempts
+0 connection resets received
+1 connections established
+2191 segments received
+1745 segments send out
+24 segments retransmited
+0 bad segments received.
+4 resets sent
+Udp:
+243 packets received
+1 packets to unknown port received.
+0 packet receive errors
+281 packets sent
+# netstat -ie
+16. Displaying IPv4 and IPv6 Information
+# netstat -g
+
+17. Print Netstat Information Continuously
+# netstat -c
+18. Finding non supportive Address
+# netstat -- verbose
+19. Finding Listening Programs
+# netstat –ap | grep http
+20. Displaying RAW Network Statistics
+# netstat –statistics – raw
